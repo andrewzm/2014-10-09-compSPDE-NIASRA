@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sparse linear algebraic methods and MPI for spatio-temporal inference</title>
+  <meta charset="utf-8">
+  <meta name="description" content="Sparse linear algebraic methods and MPI for spatio-temporal inference">
+  <meta name="author" content="National Institute for Applied Statistics Research Australia">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  <link rel=stylesheet href="./assets/css/ribbons.css"></link>
+
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <hgroup class="auto-fadein">
+    <h1>Sparse linear algebraic methods and MPI for spatio-temporal inference</h1>
+    <h2>Andrew Zammit Mangion</h2>
+    <p>National Institute for Applied Statistics Research Australia<br/>University of Wollongong</p>
+  </hgroup>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <article data-timings="">
+    <style>
+strong {
+  font-weight: bold;
+}
+</style>
+
+<style>
+em {
+  font-style: italic
+}
+</style>
+
+<h2>Introduction</h2>
+
+<p><br>
+<br>  </p>
+
+<blockquote>
+<p>Environmental systems are characterised by phenomena which evolve
+both in space and in time (cloud modelling, weather and climate,
+glacial ow, spread of invasive species etc.).</p>
+</blockquote>
+
+<p><br></p>
+
+<blockquote>
+<p>The aim of spatio-temporal modelling is to</p>
+
+<ol>
+<li><strong>Assimilate</strong> all knowledge (observables etc.) pertaining to the process/es of interest in an objective way (although some of the beliefs we incorporate might be subjective).</li>
+<li><strong>Infer</strong> parameters governing the spatio-temporal process in order to
+
+<ul>
+<li> Further our understanding of the process and </li>
+<li> Predict in both space and time.</li>
+</ul></li>
+</ol>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-2" style="background:;">
+  <hgroup>
+    <h2>Introduction</h2>
+  </hgroup>
+  <article data-timings="">
+    <div style='text-align: center;'>
+    <img height='560' src='./Antarctica.png' />
+</div>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-3" style="background:;">
+  <hgroup>
+    <h2>Introduction</h2>
+  </hgroup>
+  <article data-timings="">
+    <div style='text-align: center;'>
+    <img height='560' src='./InfoFlow.png' />
+</div>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-4" style="background:;">
+  <hgroup>
+    <h2>Bayesian Hierarchical Modelling</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>$<br>
+   \def\bold#1{\mathbf #1}
+   \def\yvec{\bold{y}}
+   \def\svec{\bold{s}}
+   \def\vvec{\bold{v}}
+   \def\wvec{\bold{w}}
+   \def\gammab{\bold{\gamma}}
+   \def\thetab{\bold{\theta}}
+$</p>
+
+<p>Divide an conquer approach to a complext problem.</p>
+
+<ul>
+<li>$\yvec_t$: observables</li>
+<li>$X_t(\svec)$: spatio-temporal process</li>
+<li>$\vvec_t$: observation error</li>
+<li>$\wvec_t$: random forcing</li>
+<li>$\thetab_i$: process/observation parameters</li>
+<li><p>$\gammab_i$: hyper-parameters</p></li>
+<li><p>L1: Observation model: $\yvec_t = g(X_t(\svec), \vvec_t; \thetab_h)$</p></li>
+<li><p>L2: Process model:    $X_t(\svec) = f(\svec,t,\wvec_t(\svec); \thetab_m)$</p></li>
+<li><p>L3: Parameter model: $p(\thetab_m ; \gammab_m), p(\thetab_h; \gammab_h), p(\thetab_v ; \gammab_v), p(\thetab_w; \gammab_w)$</p></li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-5" style="background:;">
+  <hgroup>
+    <h2>What for $X_t(\svec)$?</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Two approaches:</p>
+
+<p>Geo-statistical models: </p>
+
+<p>$$X_t(\svec) \sim GP(\mu_t(\svec),K(t,t&#39;,\svec,\svec&#39;))$$</p>
+
+<p>This can be seen as a general-purpose model when the dynamic structure is largely unknown.</p>
+
+<ol>
+<li>Dynamic (mechanistically-motivated) models
+$X<em>t(\svec) = f(X</em>{t-1}(\svec), X_{t-2}(\svec), \dots, \wvec_t(\svec); \thetab_m)$</li>
+</ol>
+
+<p>Examples:</p>
+
+<ul>
+<li>STAR models</li>
+<li>Integro-difference equation models</li>
+<li>PDE models
+
+<ul>
+<li>CMLs</li>
+</ul></li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title=''>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='Introduction'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='Introduction'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='Bayesian Hierarchical Modelling'>
+         4
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=5 title='What for $X_t(\svec)$?'>
+         5
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  
+  <!-- MathJax: Fall back to local if CDN offline but local image fonts are not supported (saves >100MB) -->
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: true
+      }
+    });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <!-- <script src="https://c328740.ssl.cf1.rackcdn.com/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+  </script> -->
+  <script>window.MathJax || document.write('<script type="text/x-mathjax-config">MathJax.Hub.Config({"HTML-CSS":{imageFont:null}});<\/script><script src="libraries/widgets/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"><\/script>')
+</script>
+<!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>

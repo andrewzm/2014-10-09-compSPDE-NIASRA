@@ -1,0 +1,814 @@
+Sparse linear algebraic methods and MPI for spatio-temporal inference
+========================================================
+author: Andrew Zammit Mangion
+date: 09 October 2014
+width: 960
+height: 700
+transition: linear
+type: exclaim
+
+ 
+```{r setup, include=FALSE}
+opts_chunk$set(cache=TRUE)
+```
+
+ 
+<div style='text-align: bottom;'>
+    <img height='80' src='./NIASRA.jpg' border="50" /> &nbsp;&nbsp;
+    <img height='80' src='./UoW.png' border="5" />
+</div>
+    
+    
+    
+Introduction
+========================================================
+incremental: true
+type: exclaim
+
+                        
+                        
+<small>
+
+Environmental systems are characterised by phenomena which evolve
+both in space and in time (cloud modelling, weather and climate,
+glacial flow, spread of invasive species etc.).
+
+The aim of spatio-temporal modelling is to
+- **Assimilate** all knowledge (observables etc.) pertaining to the process/es of interest in an objective way (although some of the beliefs we incorporate might be subjective).
+- **Infer** parameters governing the spatio-temporal process in order to
+    -  Further our understanding of the process and
+    -  Predict in both space and time.
+    
+</small>    
+    
+    
+Introduction
+========================================================
+type: exclaim
+
+<div style='text-align: center;'>
+    <img height='450' src='./Antarctica.png' />
+</div>
+    
+
+Introduction
+========================================================   
+type: exclaim
+
+<div style='text-align: center;'>
+    <img height='560' src='./InfoFlow.png' />
+</div>
+
+
+Bayesian Hierarchical Model
+=================================
+type: exclaim
+
+$\def\bold#1{\mathbf #1}$
+$\def\yvec{\bold{y}}$
+$\def\svec{\bold{s}}$
+$\def\vvec{\bold{v}}$
+$\def\wvec{\bold{w}}$
+$\def\gammab{\bold{\gamma}}$
+$\def\thetab{\bold{\theta}}$
+$\def\kvec{\bold{k}}$
+$\def\phib{\bold{\phi}}$
+$\def\psib{\bold{\psi}}$
+$\def\evec{\bold{e}}$
+$\def\xvec{\bold{x}}$
+$\def\Qmat{\bold{Q}}$
+$\def\Amat{\bold{A}}$
+$\def\betab{\bold{\beta}}$
+$\def\Lmat{\bold{L}}$
+$\def\Thetab{\bold{\Theta}}$
+$\def\Jmat{\bold{J}}$
+$\def\Cmat{\bold{C}}$
+$\def\Tmat{\bold{T}}$
+
+Divide an conquer approach to a complext problem.
+- $\yvec_t$: observables
+- $X_t(\svec)$: spatio-temporal process
+- $\vvec_t$: observation error
+- $\wvec_t$: random forcing
+- $\thetab_i$: process/observation parameters
+- $\gammab_i$: hyper-parameters
+
+
+Bayesian Hierarchical Model
+=================================
+type: exclaim
+
+</br>
+
+
+- L1: Observation model: 
+
+$$\yvec_t = g(X_t(\svec), \vvec_t; \thetab_h)$$
+
+- L2: Process model:    
+
+$$X_t(\svec) = f(\svec,t,\wvec_t(\svec); \thetab_m)$$
+
+- L3: Parameter model: 
+
+$$p(\thetab_m ; \gammab_m), p(\thetab_h; \gammab_h), p(\thetab_v ; \gammab_v), p(\thetab_w; \gammab_w)$$
+
+
+
+Modelling approaches
+======================
+type: exclaim
+<small> Two approaches:
+
+- **Geo-statistical models**: 
+
+$$X_t(\svec) \sim GP(\mu_t(\svec),K(t,t',\svec,\svec'))$$
+
+General-purpose model, used when the dynamic structure is largely unknown.
+
+- **Dynamic** (mechanistically-motivated) **models**
+
+$$X_t(\svec) = f(X_{t-1}(\svec), X_{t-2}(\svec), \dots, \wvec_t(\svec); \thetab_m)$$
+
+- Examples:
+  - STAR models
+  - Integro-difference equation models
+  - PDE models
+  - CMLs 
+
+</small>
+
+Dynamic process models
+======================
+type: exclaim
+
+<small>
+- Used when we have some mechanistic insight of the underlying process.
+- In the environmental sciences these are usually in the form of (stochastic) PDEs.
+- They implicitly define *very* complicated spatio-temporal covariances.
+
+$$ \frac{\partial X(s;t)}{\partial t} - \beta \frac{\partial^2X(s;t)}{\partial s^2} + a X(s;t) = e(s;t)$$
+
+ where $\alpha >0, \beta > 0$ and $e(s;t)$ is a random, zero mean error process. Then the geo-statistical approach requires use of covariance function:
+</small> 
+ 
+Dynamic process models
+=======================
+type: exclaim
+
+<small>
+</br>
+ $$ K(u;v) = \frac{K(0;0)}{2}\left(e^{-u^{\left( \frac{\alpha}{\beta}\right)^\frac{1}{2}}} Erfc\left(\frac{2v\left( \frac{\alpha}{\beta}\right)^\frac{1}{2} - \frac{u}{\beta}}{2\left( \frac{v}{\beta}\right)^\frac{1}{2}} \right) + \\
+e^{u^{\left( \frac{\alpha}{\beta}\right)^\frac{1}{2}}} Erfc\left(\frac{2v\left( \frac{\alpha}{\beta}\right)^\frac{1}{2} + \frac{u}{\beta}}{2\left( \frac{v}{\beta}\right)^\frac{1}{2}}\right) \right) $$
+
+-  (Wikle, LGM2013, Reykjavik, Iceland)
+</small> 
+ 
+Moving on to discrete time
+=========================
+type: exclaim
+
+<small>
+- Continuous-time ST processes are computationally tedious to deal with.
+
+- Focus on models of the form 
+
+$$X_t(\svec) = f(X_{t-1}(\svec)) + e_t(\svec)$$ 
+
+where $~e_t(\svec)~$ is the solution to
+
+$$ (\kappa^2 - \Delta)^{\alpha/2}(\tau e(\svec)) = \mathcal{W(\svec)} $$
+
+where $\mathcal{W(\svec)}$ is a space-time (white) Wiener process.
+</small>
+
+SPDE link to Matern fields
+=========================
+type: exclaim
+</br>
+
+<small>
+The SPDE
+
+$$ (\kappa^2 - \Delta)^{\alpha/2}(\tau e(\svec)) = \mathcal{W(\svec)} $$ 
+
+has as solution (Whittle, 1954)
+
+$$e(\svec) \sim \mathcal{GP}(0,K(\svec,\svec'; \alpha,\tau,\kappa))$$ 
+
+where $k(\cdot,\cdot)$ is a Matérn covariance function. The wave spectrum of $e(\svec)$ is given by
+
+$$ R(\kvec) = (2\pi)^{-\alpha}(\kappa^2 + \| \kvec \|^2)^{-\alpha}$$
+
+</small>
+
+Why SPDEs
+=========
+type: exclaim
+</br>
+
+<small>
+
+1. Non-stationarity can be handled by making the SPDE spatially varying. This results in a covariance function which is not a Matern field, but do we care?
+</br>
+
+2. We can model SPDEs on manifolds, not restricted to $\mathbb{R}^2$.
+</br>
+
+3. SPDEs can be approximated to arbitrary precision using an appropriate basis (Lindgren, 2011).
+
+</small>
+
+Dimensionality reduction
+===================
+type: exclaim
+
+<small>
+
+$$ X_{t+1}(\svec) = \mathcal{A}X_t(\svec) + e_t{\svec} $$
+
+1. Project:
+
+$$ \langle \phib,X_{t+1}(\svec) \rangle  = \langle \phib,\mathcal{A}X_{t+1}(\svec) \rangle + \langle \phib,e_t(\svec)\rangle$$ 
+
+2. Interpolate:
+
+$$ \langle \phib,\psib^T \rangle\xvec_{t+1}  = \langle \phib,\mathcal{A}\psib^T \rangle\xvec_t + \langle \phib,\psib^T\rangle\evec_t$$ 
+
+For $\alpha = 2$ and $\psib = \phib$ (Galerkin method):
+
+$$[ \langle\phib, \kappa^2\phib^T\rangle - \langle\phib, \Delta\phib^T\rangle)]\tau \evec = \langle \phib,\mathcal{W(\svec)} \rangle  $$ 
+
+</small>
+
+Dimensionality reduction
+===================
+type: exclaim
+</br>
+</br>
+</br>
+$$ \Large \evec \sim \mathcal{N}(\bold{0},\Qmat^{-1})$$
+</br>
+where $\Qmat$ is sparse.
+
+
+
+Modelling on manifolds
+=========
+type: exclaim
+<div style='text-align: center;'>
+    <img height='560' src='./Manifold.png' />
+</div>
+
+Taking into consideration boundary effects
+=========
+type: exclaim
+<div style='text-align: center;'>
+    <img height='480' src='./Boundaries.png' />
+</div>
+
+(Lindgren, 2014)
+
+
+Multivariate SPDEs
+=========
+type: exclaim
+
+<small>
+
+- Useful when we have multiple interacting spatio-temporal processes
+
+- Consider the bi-variate sub-system of random forcings: $e_{1,t}(\svec), e_{2,t}(\svec)$. Define the multi-variate Gaussian process (MVGP) as
+
+$$(e_{1,t}(\svec), e_{2,t}(\svec)) = \bold{e}(\svec) \sim \mathcal{MVGP}(\bold{0},\bold{K}(\svec,\svec',t,t';\thetab_K))$$
+
+where $\bold{K}(\svec,\svec',t,t';\thetab_K)$ is a $2 \times 2$ *cross-covariance matrix function* (i.e.~ each element of $\bold{K}$ is a covariance function (Finley, 2007):
+
+$$ \bold{K}(\svec,\svec',t,t') = [Cov(e_{i,t}(\svec), e_{i,t'}(\svec'))]_{i,j \in \{1,2\}}$$
+
+</small>
+
+Multivariate SPDEs
+=============
+type: exclaim
+<small>
+
+
+- Model with a *system* of SPDEs. Example of a three-variate system of random forcings:
+
+$$\begin{bmatrix}
+\mathcal{A}_1 & &  \\
+& & \mathcal{A}_2 & \mathcal{A}_{2,3} \\
+& &  \mathcal{A}_{3,2} & \mathcal{A}_3
+\end{bmatrix}
+\begin{bmatrix}
+e_1(\svec) \\ e_2(\svec) \\ e_3(\svec) 
+\end{bmatrix} = 
+\begin{bmatrix}
+\mathcal{W}_1(\svec) \\ \mathcal{W}_2(\svec) \\ \mathcal{W}_3(\svec)
+\end{bmatrix}$$
+
+
+</small>
+
+Summary
+============
+type: exclaim
+
+<small>
+
+- SPDEs are a useful way to modelling complex phenomena.
+
+- Real power comes in using finite elements to decompose and represent them as GMRFs
+
+- From now on we restrict ourselves to the linear, Gaussian case
+
+$$\begin{bmatrix}
+\xvec_{1,t} \\
+\xvec_{2,t} \\
+\vdots
+\end{bmatrix} = 
+\begin{bmatrix}
+ \Amat_{1} & \Amat_{1,2} & \dots \\
+ \Amat_{2,1}& \Amat_{2,2} & \dots \\
+ \vdots&  \vdots &  \ddots \\
+ \end{bmatrix} \begin{bmatrix}
+\xvec_{1,t-1} \\
+\xvec_{2,t-1} \\
+\vdots
+\end{bmatrix} +
+\bold{J}_t\bold{\beta} +
+\begin{bmatrix}
+\evec_{1,t} \\
+\evec_{2,t} \\
+\vdots
+\end{bmatrix}$$
+
+- Kalman filter/ RTS methods do not lend themselves to sparse methods (more of that in another talk)
+
+</small>
+
+Construct a massive GMRF
+=============
+type: exclaim
+
+<small>
+
+- Collapse all variates, and their spatial and temporal components into one big GMRF
+
+- Sparsity is retained and one can make use of fill-in reduction permutations when computing the Cholesky factor (Knorr-Rue and Held, 2002)
+
+$$p(\xvec,\betab_I | \Thetab) = \left(\prod_{i=1}^T{p(\xvec_{t} | \xvec_{t-1},\betab,\Thetab)}\right)p(\xvec_0 | \betab, \Thetab)p(\betab_I)$$
+
+- Initial distribution (Note, not the stationary one!):
+
+$$\xvec_0|\betab_I,\Thetab \sim \mathcal{N}(\bold{J}_0\betab,[\Qmat_w - \Amat^T\Qmat_w\Amat]^{-1})$$
+
+</small>
+        
+        
+ST GMRF
+=============
+type: exclaim
+<small>
+$(\xvec,\betab) \sim \mathcal{N}(\bold{0},\Qmat^{-1})$ where
+
+$$\small \begin{array}{cc}
+ \Qmat = \begin{bmatrix} \Qmat_1 & \Qmat_2  \\ \Qmat_2^T  & \Qmat_3  \end{bmatrix}
+ &
+ \Qmat_2 = \begin{bmatrix} \Amat^T\Qmat_w\Jmat_{1} - \Qmat_0\Jmat_{0} \\ \Amat^T\Qmat_w\Jmat_{2} - \Qmat_w\Jmat_1  \\ \vdots\end{bmatrix}, 
+  \end{array}
+ $$
+
+
+$$\small   \Qmat_1 = \begin{bmatrix} \Amat^T\Qmat_w\Amat + \Qmat_0 & -\Amat^T\Qmat_w     	                			& ~~~   \\
+												-\Qmat_w\Amat     &	\Amat^T\Qmat_w\Amat + \Qmat_w& -\Amat^T\Qmat_w       			&		~~~	\\
+																					& -\Qmat_w\Amat     &	\ddots &  \ddots  \\		
+																					&  \ddots          &     \ddots        & \ddots					&  
+			  \end{bmatrix}$$
+
+
+$$\small  \Qmat_3 = \Jmat_0^T\Qmat_0\Jmat_0 + \sum_{i=1}^{T} (\Jmat_i^T\Qmat_w\Jmat_i) + \Qmat_\beta$$
+
+</small>        
+
+
+Size matters
+=============
+type: exclaim
+
+<small>
+
+- Conditioned on the parameters, this is the simplest model possible.
+- $\Qmat$ is large. Example: Antarctica, 4 ST fields, 7 time points, 500k observations, 500k vertices.
+- Updated $\Qmat^* \approx 3.5Gb$. $\Qmat^{*-1} \approx 1Tb$
+- What if we want to find $diag(\Amat \Sigma^* \Amat^T)$ where $\Sigma^* = \Qmat^{*-1}$?
+- Impossible to carry out on a standard PC for large, $\Amat$, even if $chol(\Qmat^*)$ is known and fill-in reduced. 
+
+</small>
+
+The medal plot
+=============
+type: exclaim
+<div style='text-align: center;'>
+    <img height='460' src='./medal1d.png' />
+</div>
+</br>
+http://github.com/andrewzm/medalplot
+
+
+The medal plot
+=============
+type: exclaim
+<div style='text-align: center;'>
+    <img height='460' src='./medal2d.png' />
+</div>
+</br>
+http://github.com/andrewzm/medalplot
+
+Sparse subsets
+=============
+type: exclaim
+
+<small>
+- A full backsolve for $\Amat \Sigma^* \Amat^T$ is wasteful since $\Amat$ is very sparse.
+- We only need a few elements of $\Sigma^*$. Which elements are these?
+
+> **Lemma 1**: Takahashi Equations (Erisman and Tinney, 1975)
+Let $\Lmat = chol(\Qmat)$. If $L_{ij} \ne 0$, then $\Sigma_{ij}$ can be computed using elements in
+  - $\Lmat$ and
+  - $\Sigma^*_{IJ}, I = \{ i'; i' > i\}, J = \{j'; j' > j\}$
+
+- Knowledge of $chol(\Qmat^*)$ implies knowledge of a sparse subset of $\Sigma^*$, $\Sigma_{00}^*$.
+</small>
+
+Sparse subsets
+=============
+type: exclaim
+
+<small>
+- A full backsolve for $\Amat \Sigma^* \Amat^T$ is wasteful since $\Amat$ is very sparse.
+- We only need a few elements of $\Sigma^*$. Which elements are these?
+
+> **Theorem 1**: Let $\yvec = \Cmat\xvec + \vvec$ and $\vvec \sim \mathcal{N}(0,\Tmat^{-1})$. Then if
+- $\textrm{zeros}(\Amat) \subseteq \textrm{zeros}(\Cmat)$
+- $\Amat$ is non-negative
+- $\Tmat$ is diagonal, then $diag(\Amat \Sigma^* \Amat^T)  \equiv diag(\Amat \Sigma^*_{00} \Amat^T)$
+
+- We can replace a very expensive backsolve by a very easy matrix multiplication.
+</small>
+
+Sketch of proof
+=============
+type: exclaim
+
+<small>
+
+- The updated precision matrix $\Qmat^* = \Qmat + \Amat^T\Tmat^{-1}\Amat$ is sparse if both $\Qmat$ and $\Amat$ are sparse and $\Tmat$ is diagonal.
+
+> **Lemma 2**: If $\Amat$ is non-negative then $[\Amat^T\Amat]_{jk} = 0 \Leftrightarrow diag(\Amat\Sigma^*\Amat^T)$ does not depend on $\Sigma^*_{jk}$
+
+</br>
+
+- Let $zeros(\cdot)$ denote the symbolic pattern of a matrix.
+
+<!-- # - If $\Amat$ is non-negative then 
+# $$ [zeros(\Amat^T\Amat)]_{jk} = 0 \Leftrightarrow [\Amat^T\Amat]_{jk} = 0$$ -->
+
+$$ \begin{align} zeros(\Qmat^*) &= zeros(\Qmat + \Amat^T\Tmat^{-1}\Amat) \\ &\ge zeros(\Amat^T\Tmat^{-1}\Amat) = zeros(\Amat^T\Amat)  \end{align}$$
+
+</small>
+
+Sketch of proof
+=============
+type: exclaim
+
+
+</br>
+- By Rue and Held (2005, Corollary 2.2) 
+
+$$ zeros(\Lmat^*)_{jk} \ge zeros(\Qmat^*)_{jk} \\ \ge zeros(\Amat^T\Amat)$$
+
+- Proof is completed by applying Lemma 1: 
+
+$$zeros(\Sigma_{00}) \ge zeros(\Lmat^*)_{jk}$$
+ 
+Demo
+=============
+type: exclaim
+
+- Run vignette at http://github.com/andrewzm/MVST
+
+```{r,eval=FALSE}
+Asub <- getC(e[[1]])[1:5000,]
+system.time({ est <-diag( Asub %*% Results$Partial_Cov %*%  t(Asub)) })
+> user  system elapsed 
+> 5.232   0.465   5.698
+
+Lp <- Results$Qpermchol
+P <- Results$P
+system.time({X <- solve(Lp, t(P)%*%t(Asub))
+             est <- crossprod(X,X)} )
+> user  system elapsed 
+> 221.250   0.382 221.688
+
+```             
+
+
+
+
+</small>
+
+Implications
+============
+type: exclaim
+
+<small>
+
+1. In practice the Takahashi equations are always used with GMRFs in order to obtain the marginal variances. Theorem 2 provides a means to obtain uncertainty on linear combinations essentially **for free**.
+
+2. I can provide predictive uncertainties at **any** point provided that each row of $zeros(\Amat) \subseteq zeros(\Cmat)$.
+
+</small>
+
+<div style='text-align: center;'>
+    <img height='200' src='./Triangles.png' />
+</div>
+
+Implications
+============
+type: exclaim
+
+ 
+- Hundreds of thousands of validation points
+
+<div style='text-align: center;'>
+    <img height='460' src='./Validation.png' />
+</div>
+
+
+
+(Pure) parallel sampling with massive GMRFs
+=============
+type: exclaim
+
+<small>
+- In all practical cases there are unknown parameters and a massive GMRF, sampling may be required
+- MCMC with multiple chains is relatively straightforward
+  - e.g. Evolutionary MCMC, Embarassingly parallel MCMC
+-  Extremely little work on parallelising a **single** chain
+-  Take advantage of **local Markov property**
+
+$$ x_i \perp \xvec_{-\{i,ne(i)\}} | \xvec_{ne(i)} ~~~ \forall i \in \mathcal{V}$$
+
+$$ E(x_i | \xvec_{-i}) = -\frac{1}{Q_{ii}}\sum_{j:j\sim i}Q_{ij}x_j; ~~~ prec(x_i | \xvec_{-i}) = Q_{ii}$$
+
+</small>
+ 
+ 
+Graph colouring
+=============
+type: exclaim
+
+<div style='text-align: center;'>
+    <img height='300' src='./Colouring.png' />
+</div>
+
+</br>
+
+> **Theorem 3**: Any planar map divided into contigious regions can be coloured using at most **FOUR** colours (Appel and Haken, 1976)
+
+
+Graph colouring
+=============
+type: exclaim
+
+<script src="http://code.createjs.com/easeljs-0.7.1.min.js"></script>
+<script src="http://code.createjs.com/tweenjs-0.5.1.min.js"></script>
+<script src="http://code.createjs.com/movieclip-0.7.1.min.js"></script>
+<script src="Colouring.js"></script>
+
+<script>
+var canvas2, stage2, exportRoot2;
+
+function colouring() {
+  canvas2 = document.getElementById("canvas2");
+  exportRoot2 = new lib.Colouring();
+
+	stage2 = new createjs.Stage(canvas2);
+	stage2.addChild(exportRoot2);
+	stage2.update();
+
+	createjs.Ticker.setFPS(lib.properties.fps);
+	createjs.Ticker.addEventListener("tick", stage2);
+}
+
+
+</script>
+
+<body onload="colouring();parallel_sampling();colouring4();">
+
+<canvas id="canvas2" width="800" height="400" style="background-color:#FFFFFF"></canvas>
+
+> **Theorem 3**: Any planar map divided into contigious regions can be coloured using at most **FOUR** colours (Appel and Haken, 1976)
+
+
+Parallel (chromatic) Sampling
+===============
+type: exclaim
+
+<script src="http://code.createjs.com/easeljs-0.7.1.min.js"></script>
+<script src="http://code.createjs.com/tweenjs-0.5.1.min.js"></script>
+<script src="http://code.createjs.com/movieclip-0.7.1.min.js"></script>
+<script src="http://code.createjs.com/preloadjs-0.4.1.min.js"></script>
+<script src="Parallel_sampling.js"></script>
+
+<script>
+var canvas, stage, exportRoot;
+
+function parallel_sampling() {
+  canvas = document.getElementById("canvas");
+	images = images||{};
+
+	var loader = new createjs.LoadQueue(false);
+	loader.addEventListener("fileload", handleFileLoad);
+	loader.addEventListener("complete", handleComplete);
+	loader.loadManifest(lib.properties.manifest);
+}
+
+function handleFileLoad(evt) {
+	if (evt.item.type == "image") { images[evt.item.id] = evt.result; }
+}
+
+function handleComplete() {
+	exportRoot = new lib.Parallel_sampling();
+
+	stage = new createjs.Stage(canvas);
+	stage.addChild(exportRoot);
+	stage.update();
+
+	createjs.Ticker.setFPS(lib.properties.fps);
+	createjs.Ticker.addEventListener("tick", stage);
+}
+</script>
+
+<canvas id="canvas" width="900" height="700" style="background-color:#FFFFFF"></canvas>
+
+Improving the chromatic sampler
+===============
+type: exclaim
+
+<small>
+
+- Single-site updating in spatio-temporal systems is a bad idea
+- We can make use of the **global Markov property** 
+
+$$ \xvec_A \perp \xvec_B | \xvec_{C}$$
+
+$\forall A,B,C \notin \varnothing$ and $C$ separating $A,B$.
+
+- In typical Bayesian networks, finding $A, B$ and $C$ can be difficult (seed and spawn idea, Gonzales, 2011).
+
+- With a spatial network, this is remarkably easy using the **Kernighan-Lin algorithm** for graph partitioning (Kernighan and Lin, 1970).
+
+</small>
+
+Kernighan-Lin algorithm
+===============
+type: exclaim
+
+</br>
+- Let $G(V,E)$ be a graph, and let $V$ be the set of nodes and $E$ the set of edges. 
+
+- Find a partition of two disjoint, equal-size subsets $A,B$, such that the sum of the weights of the edges between nodes in A and B is minimized.
+
+- Setting edge weights = 1, gives a bisection algorithm!
+
+Example
+===============
+type: exclaim
+
+<div style='text-align: center;'>
+    <img height='560' src='./colouring1.png' />
+</div>
+
+Example
+===============
+type: exclaim
+
+<div style='text-align: center;'>
+    <img height='560' src='./colouring2.png' />
+</div>
+
+Example
+===============
+type: exclaim
+
+<div style='text-align: center;'>
+    <img height='560' src='./colouring3.png' />
+</div>
+
+Example
+===============
+type: exclaim
+
+<div style='text-align: center;'>
+    <img height='560' src='./colouring4.png' />
+</div>
+
+Example
+===============
+type: exclaim
+
+<div style='text-align: center;'>
+    <img height='560' src='./colouring5.png' />
+</div>
+
+Example
+===============
+type: exclaim
+
+<div style='text-align: center;'>
+    <img height='560' src='./colouring6.png' />
+</div>
+
+Example
+===============
+type: exclaim
+
+<div style='text-align: center;'>
+    <img height='560' src='./colouring7.png' />
+</div>
+
+Example
+===============
+type: exclaim
+
+<div style='text-align: center;'>
+    <img height='560' src='./colouring_final.png' />
+</div>
+
+- Parallel sampling using the coloured super-graph
+
+Satellite footprints
+================
+type: exclaim
+
+- Sampling from the prior guarantees enormous speed-ups using MPI
+
+- Observations with large spatial footprints cause the four-colour theorem to fail.
+
+$$ \begin{align}
+\widehat\Qmat^{ii} \hat\xvec^i &= \Cmat^{i^T}\Qmat\left(\yvec - \sum_{j \in [1\dots d]/i}\Cmat^j\hat\xvec^j\right) - \\
+&~~~~ \sum_{j \in [1\dots d]/i} \left(\Qmat^{ij}\hat\xvec^j \right)
+\end{align}
+$$
+
+New colouring strategy
+================
+type: exclaim
+
+> No two adjacent nodes in a super-graph can have the same colour **and** no two nodes of the same colour can be spanned by the same observation
+
+<div style='text-align: center;'>
+    <img height='400' src='./Colouring_support.png' />
+</div>
+
+
+New colouring strategy
+================
+type: exclaim
+
+<div style='text-align: center;'>
+    <img height='600' src='./colouring_support2.png' />
+</div>
+
+
+Conclusion
+============
+type: exclaim
+incremental: true
+
+<small>
+
+- Multi-variate spatio-temporal statistics has a lot to offer in a large range of environmental problems which remain untapped.
+
+- Computational properties of GMRFs allow us to consider major sources of uncertainty with influence on experimental design: e.g. in multivariate spatial problems, **coverage** is not as important as **mixture diversity**
+
+- Paramter estimation with large-scale spatio-temporal problems is hard but usually possible (INLA, VB, MCMC), but with large-scale multi-variate spatio-temporal under-determined problems considerably harder. Parallel sampling offers a possible solution. 
+
+- Parallel sampling can also become intractable, what about parallel approximate Bayesian sparse methods? http://arxiv.org/abs/1305.4152
+
+</small>
+
+Thanks
+============
+
+</br>
+- Jonathan Rougier (University of Bristol)
+
+- Botond Cseke (University of Edinburgh)
+
+- Finn Lindgren (University of Bath)
+
+
