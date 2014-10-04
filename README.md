@@ -10,17 +10,13 @@ In the second part of the talk I will concentrate on two computational 'tricks' 
 
 The talk will focus on the framework of Lindgren et al. (2011) and on the multi-variate spatio-temporal study in Zammit-Mangion et al. (2014) and Zammit-Mangion et al. (2014b). Slides for this talk are available on http://www.github.com/andrewzm/MVST/compSPDE-NIASRA-10-14
 
-References: 
+References:
 
-Lindgren F, Rue H, Lindstrom J, 2011. An explicit link between Gaussian elds and Gaussian Markov
-random elds: the stochastic partial dierential equation approach. Journal of the Royal Statistical Society
-B 73(4): 423-498.
+Lindgren F, Rue H, Lindstrom J, 2011. An explicit link between Gaussian fields and Gaussian Markov random fields: the stochastic partial differential equation approach. Journal of the Royal Statistical Society B 73(4): 423-498.
 
-Zammit-Mangion A, Rougier JC, Bamber JL, Schoen NW, 2014. Resolving the Antarctic contribution to
-sea-level rise: a hierarchical modelling framework. Environmetrics 25: 245-264.
+Zammit-Mangion A, Rougier JC, Bamber JL, Schoen NW, 2014. Resolving the Antarctic contribution to sea-level rise: a hierarchical modelling framework. Environmetrics 25: 245-264.
 
-Zammit-Mangion A, Rougier JC, Schoen NW, Lindgren F, Bamber JL, in second review. Multivariate spatio-temporal modelling for
-assessing Antarctica's present-day contribution to sea-level rise.  
+Zammit-Mangion A, Rougier JC, Schoen NW, Lindgren F, Bamber JL, in review. Multivariate spatio-temporal modelling for assessing Antarctica's present-day contribution to sea-level rise.
 
 
 
