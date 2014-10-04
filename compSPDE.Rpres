@@ -85,7 +85,7 @@ $\def\Jmat{\bold{J}}$
 $\def\Cmat{\bold{C}}$
 $\def\Tmat{\bold{T}}$
 
-Divide an conquer approach to a complext problem.
+Divide an conquer approach to a complex problem.
 - $\yvec_t$: observables
 - $X_t(\svec)$: spatio-temporal process
 - $\vvec_t$: observation error
@@ -421,7 +421,7 @@ The medal plot
 =============
 type: exclaim
 <div style='text-align: center;'>
-    <img height='460' src='./medal2d.png' />
+    <img height='460' src='./medal2d.jpg' />
 </div>
 </br>
 http://github.com/andrewzm/medalplot
