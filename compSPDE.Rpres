@@ -30,11 +30,10 @@ type: exclaim
 <small>
 
 Environmental systems are characterised by phenomena which evolve
-both in space and in time (cloud modelling, weather and climate,
-glacial flow, spread of invasive species etc.).
+both in space and in time (weather and climate, glacial flow, spread of invasive species etc.).
 
 The aim of spatio-temporal modelling is to
-- **Assimilate** all knowledge (observables etc.) pertaining to the process/es of interest in an objective way (although some of the beliefs we incorporate might be subjective).
+- **Assimilate** all knowledge (observables etc.) pertaining to the process/es of interest.
 - **Infer** parameters governing the spatio-temporal process in order to
     -  Further our understanding of the process and
     -  Predict in both space and time.
@@ -47,7 +46,7 @@ Introduction
 type: exclaim
 
 <div style='text-align: center;'>
-    <img height='450' src='./Antarctica.png' />
+    <img height='560' src='./Antarctica.png' />
 </div>
     
 
@@ -85,7 +84,7 @@ $\def\Jmat{\bold{J}}$
 $\def\Cmat{\bold{C}}$
 $\def\Tmat{\bold{T}}$
 
-Divide an conquer approach to a complex problem.
+Divide and conquer approach to a complex problem.
 - $\yvec_t$: observables
 - $X_t(\svec)$: spatio-temporal process
 - $\vvec_t$: observation error
@@ -179,10 +178,10 @@ where $~e_t(\svec)~$ is the solution to
 
 $$ (\kappa^2 - \Delta)^{\alpha/2}(\tau e(\svec)) = \mathcal{W(\svec)} $$
 
-where $\mathcal{W(\svec)}$ is a space-time (white) Wiener process.
+where $\mathcal{W(\svec)}$ is a spatial (white) Wiener process.
 </small>
 
-SPDE link to Matern fields
+SPDE link to Matérn fields
 =========================
 type: exclaim
 </br>
@@ -209,7 +208,7 @@ type: exclaim
 
 <small>
 
-1. Non-stationarity can be handled by making the SPDE spatially varying. This results in a covariance function which is not a Matern field, but do we care?
+1. Non-stationarity can be handled by making the SPDE spatially varying. This results in a covariance function which is not a Matérn field, but do we care?
 </br>
 
 2. We can model SPDEs on manifolds, not restricted to $\mathbb{R}^2$.
@@ -223,7 +222,7 @@ Dimensionality reduction
 ===================
 type: exclaim
 
-<small>
+</br>
 
 $$ X_{t+1}(\svec) = \mathcal{A}X_t(\svec) + e_t{\svec} $$
 
@@ -239,7 +238,6 @@ For $\alpha = 2$ and $\psib = \phib$ (Galerkin method):
 
 $$[ \langle\phib, \kappa^2\phib^T\rangle - \langle\phib, \Delta\phib^T\rangle)]\tau \evec = \langle \phib,\mathcal{W(\svec)} \rangle  $$ 
 
-</small>
 
 Dimensionality reduction
 ===================
@@ -276,13 +274,13 @@ type: exclaim
 
 <small>
 
-- Useful when we have multiple interacting spatio-temporal processes
+- Useful when we have multiple interacting spatio-temporal processes.
 
 - Consider the bi-variate sub-system of random forcings: $e_{1,t}(\svec), e_{2,t}(\svec)$. Define the multi-variate Gaussian process (MVGP) as
 
 $$(e_{1,t}(\svec), e_{2,t}(\svec)) = \bold{e}(\svec) \sim \mathcal{MVGP}(\bold{0},\bold{K}(\svec,\svec',t,t';\thetab_K))$$
 
-where $\bold{K}(\svec,\svec',t,t';\thetab_K)$ is a $2 \times 2$ *cross-covariance matrix function* (i.e.~ each element of $\bold{K}$ is a covariance function (Finley, 2007):
+where $\bold{K}(\svec,\svec',t,t';\thetab_K)$ is a $2 \times 2$ *cross-covariance matrix function* (i.e.~ each element of $\bold{K}$ is a covariance function (Finley et al., 2007):
 
 $$ \bold{K}(\svec,\svec',t,t') = [Cov(e_{i,t}(\svec), e_{i,t'}(\svec'))]_{i,j \in \{1,2\}}$$
 
@@ -317,9 +315,9 @@ type: exclaim
 
 <small>
 
-- SPDEs are a useful way to modelling complex phenomena.
+- SPDEs are a useful tool in modelling complex phenomena.
 
-- Real power comes in using finite elements to decompose and represent them as GMRFs
+- Real power comes in using finite elements to decompose and represent them as GMRFs.
 
 - From now on we restrict ourselves to the linear, Gaussian case
 
@@ -344,7 +342,7 @@ $$\begin{bmatrix}
 \vdots
 \end{bmatrix}$$
 
-- Kalman filter/ RTS methods do not lend themselves to sparse methods (more of that in another talk)
+- Kalman filter/ RTS methods do not lend themselves to sparse methods (more of that in another talk).
 
 </small>
 
@@ -354,7 +352,7 @@ type: exclaim
 
 <small>
 
-- Collapse all variates, and their spatial and temporal components into one big GMRF
+- Collapse all variates, and their spatial and temporal components into one big GMRF.
 
 - Sparsity is retained and one can make use of fill-in reduction permutations when computing the Cholesky factor (Knorr-Rue and Held, 2002)
 
@@ -554,9 +552,9 @@ type: exclaim
 
 <small>
 - In all practical cases there are unknown parameters and a massive GMRF, sampling may be required
-- MCMC with multiple chains is relatively straightforward
-  - e.g. Evolutionary MCMC, Embarassingly parallel MCMC
--  Extremely little work on parallelising a **single** chain
+- MCMC with multiple chains is relatively straightforward.
+  - e.g. Evolutionary MCMC, Embarassingly parallel MCMC.
+-  Extremely little work on parallelising a **single** chain.
 -  Take advantage of **local Markov property**
 
 $$ x_i \perp \xvec_{-\{i,ne(i)\}} | \xvec_{ne(i)} ~~~ \forall i \in \mathcal{V}$$
@@ -612,6 +610,18 @@ function colouring() {
 
 > **Theorem 3**: Any planar map divided into contigious regions can be coloured using at most **FOUR** colours (Appel and Haken, 1976)
 
+Graph colouring
+=============
+type: exclaim
+
+<div style='text-align: center;'>
+    <img height='300' src='./Colouring_full.png' /> 
+</div>
+
+</br>
+
+> **Theorem 3**: Any planar map divided into contigious regions can be coloured using at most **FOUR** colours (Appel and Haken, 1976)
+
 
 Parallel (chromatic) Sampling
 ===============
@@ -660,7 +670,7 @@ type: exclaim
 
 <small>
 
-- Single-site updating in spatio-temporal systems is a bad idea
+- Single-site updating in spatio-temporal systems is a bad idea.
 - We can make use of the **global Markov property** 
 
 $$ \xvec_A \perp \xvec_B | \xvec_{C}$$
@@ -748,18 +758,18 @@ type: exclaim
     <img height='560' src='./colouring_final.png' />
 </div>
 
-- Parallel sampling using the coloured super-graph
+- Parallel sampling using the coloured super-graph.
 
 Satellite footprints
 ================
 type: exclaim
 
-- Sampling from the prior guarantees enormous speed-ups using MPI
+- Sampling from the prior guarantees enormous speed-ups using MPI.
 
 - Observations with large spatial footprints cause the four-colour theorem to fail.
 
 $$ \begin{align}
-\widehat\Qmat^{ii} \hat\xvec^i &= \Cmat^{i^T}\Qmat\left(\yvec - \sum_{j \in [1\dots d]/i}\Cmat^j\hat\xvec^j\right) - \\
+\widehat\Qmat^{ii} \hat\xvec^i &= \Cmat^{i^T}\Tmat^{-1}\left(\yvec - \sum_{j \in [1\dots d]/i}\Cmat^j\hat\xvec^j\right) - \\
 &~~~~ \sum_{j \in [1\dots d]/i} \left(\Qmat^{ij}\hat\xvec^j \right)
 \end{align}
 $$
@@ -768,7 +778,7 @@ New colouring strategy
 ================
 type: exclaim
 
-> No two adjacent nodes in a super-graph can have the same colour **and** no two nodes of the same colour can be spanned by the same observation
+> No two adjacent nodes in a super-graph can have the same colour **and** no two nodes of the same colour can be spanned by the same observation.
 
 <div style='text-align: center;'>
     <img height='400' src='./Colouring_support.png' />
@@ -787,19 +797,17 @@ type: exclaim
 Conclusion
 ============
 type: exclaim
-incremental: true
+</br>
 
-<small>
 
-- Multi-variate spatio-temporal statistics has a lot to offer in a large range of environmental problems which remain untapped.
 
-- Computational properties of GMRFs allow us to consider major sources of uncertainty with influence on experimental design: e.g. in multivariate spatial problems, **coverage** is not as important as **mixture diversity**
+- Multi-variate spatio-temporal statistics has a lot to offer in a large range of environmental problems which remain untapped. 
 
-- Paramter estimation with large-scale spatio-temporal problems is hard but usually possible (INLA, VB, MCMC), but with large-scale multi-variate spatio-temporal under-determined problems considerably harder. Parallel sampling offers a possible solution. 
+- Inference with large-scale spatio-temporal problems is hard but usually possible (INLA, VB, MCMC). However we need more with multi-variate systems.
+
+- Many computational benefits to GMRFs and parallelisation which remain unexploited.
 
 - Parallel sampling can also become intractable, what about parallel approximate Bayesian sparse methods? http://arxiv.org/abs/1305.4152
-
-</small>
 
 Thanks
 ============
