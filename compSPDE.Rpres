@@ -224,7 +224,7 @@ type: exclaim
 
 </br>
 
-$$ X_{t+1}(\svec) = \mathcal{A}X_t(\svec) + e_t{\svec} $$
+$$ X_{t+1}(\svec) = \mathcal{A}X_t(\svec) + e_t(\svec) $$
 
 1. Project:
 
@@ -431,11 +431,12 @@ type: exclaim
 <small>
 - A full backsolve for $\Amat \Sigma^* \Amat^T$ is wasteful since $\Amat$ is very sparse.
 - We only need a few elements of $\Sigma^*$. Which elements are these?
+- It turns out that the elements we need are those computed using the Takahashi equations.
 
-> **Lemma 1**: Takahashi Equations (Erisman and Tinney, 1975)
+> **Lemma 1**: (Erisman and Tinney, 1975)
 Let $\Lmat = chol(\Qmat)$. If $L_{ij} \ne 0$, then $\Sigma_{ij}$ can be computed using elements in
   - $\Lmat$ and
-  - $\Sigma^*_{IJ}, I = \{ i'; i' > i\}, J = \{j'; j' > j\}$
+  - $\Sigma^*_{IJ}, (I,J) = \{ i', j'; i' > i, j' > j, \Lmat_{i'j'}, \ne 0 \}$
 
 - Knowledge of $chol(\Qmat^*)$ implies knowledge of a sparse subset of $\Sigma^*$, $\Sigma_{00}^*$.
 </small>
@@ -455,6 +456,62 @@ type: exclaim
 
 - We can replace a very expensive backsolve by a very easy matrix multiplication.
 </small>
+
+ 
+
+Implications
+============
+type: exclaim
+
+<small>
+
+1. In practice the Takahashi equations are always used with GMRFs in order to obtain the marginal variances. Theorem 2 provides a means to obtain uncertainty on linear combinations essentially **for free**.
+
+2. I can provide predictive uncertainties at **any** point provided that each row of $zeros(\Amat) \subseteq zeros(\Cmat)$.
+
+</small>
+
+<div style='text-align: center;'>
+    <img height='200' src='./Triangles.png' />
+</div>
+
+Implications
+============
+type: exclaim
+
+ 
+- Hundreds of thousands of validation points
+
+<div style='text-align: center;'>
+    <img height='460' src='./Validation.png' />
+</div>
+
+Demo
+=============
+type: exclaim
+
+- Run vignette at http://github.com/andrewzm/MVST
+
+```{r,eval=FALSE}
+Asub <- getC(e[[1]])[1:5000,]
+system.time({ est <-diag( Asub %*% Results$Partial_Cov %*%  t(Asub)) })
+> user  system elapsed 
+> 5.232   0.465   5.698
+
+Lp <- Results$Qpermchol
+P <- Results$P
+system.time({X <- solve(Lp, t(P)%*%t(Asub))
+             est <- crossprod(X,X)} )
+> user  system elapsed 
+> 221.250   0.382 221.688
+
+```             
+
+
+
+
+</small>
+
 
 Sketch of proof
 =============
@@ -490,60 +547,6 @@ $$ zeros(\Lmat^*)_{jk} \ge zeros(\Qmat^*)_{jk} \\ \ge zeros(\Amat^T\Amat)$$
 - Proof is completed by applying Lemma 1: 
 
 $$zeros(\Sigma_{00}) \ge zeros(\Lmat^*)_{jk}$$
- 
-Demo
-=============
-type: exclaim
-
-- Run vignette at http://github.com/andrewzm/MVST
-
-```{r,eval=FALSE}
-Asub <- getC(e[[1]])[1:5000,]
-system.time({ est <-diag( Asub %*% Results$Partial_Cov %*%  t(Asub)) })
-> user  system elapsed 
-> 5.232   0.465   5.698
-
-Lp <- Results$Qpermchol
-P <- Results$P
-system.time({X <- solve(Lp, t(P)%*%t(Asub))
-             est <- crossprod(X,X)} )
-> user  system elapsed 
-> 221.250   0.382 221.688
-
-```             
-
-
-
-
-</small>
-
-Implications
-============
-type: exclaim
-
-<small>
-
-1. In practice the Takahashi equations are always used with GMRFs in order to obtain the marginal variances. Theorem 2 provides a means to obtain uncertainty on linear combinations essentially **for free**.
-
-2. I can provide predictive uncertainties at **any** point provided that each row of $zeros(\Amat) \subseteq zeros(\Cmat)$.
-
-</small>
-
-<div style='text-align: center;'>
-    <img height='200' src='./Triangles.png' />
-</div>
-
-Implications
-============
-type: exclaim
-
- 
-- Hundreds of thousands of validation points
-
-<div style='text-align: center;'>
-    <img height='460' src='./Validation.png' />
-</div>
-
 
 
 (Pure) parallel sampling with massive GMRFs
