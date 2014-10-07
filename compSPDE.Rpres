@@ -424,14 +424,33 @@ type: exclaim
 </br>
 http://github.com/andrewzm/medalplot
 
+
 Sparse subsets
 =============
 type: exclaim
+incremental: true
 
 <small>
+
 - A full backsolve for $\Amat \Sigma^* \Amat^T$ is wasteful since $\Amat$ is very sparse.
-- We only need a few elements of $\Sigma^*$. Which elements are these?
-- It turns out that the elements we need are those computed using the Takahashi equations.
+- We only need a few elements of $\Sigma^*$: $[\Amat^T \Amat]_{ij} \ne 0$
+- Consider the following model:
+
+$$\begin{align} \yvec &= \Cmat \xvec + \vvec \\
+\vvec &\sim \mathcal{N}(0,\Tmat^{-1}) \\
+\xvec &\sim \mathcal{N}(0,\Qmat^{-1}) \end{align}$$
+
+- $prec(\xvec | \yvec) \equiv \Qmat^* = (\Qmat + \Cmat^T \Tmat^{-1} \Cmat)$
+- If $zeros(\Amat) \subseteq zeros(\Cmat)$ and $\Tmat$ is diagonal, then $\Qmat^*$ contains the required elements.
+
+</small>
+
+Sparse subsets
+=============
+type: exclaim
+incremental: true
+
+- How do we get $\Sigma^*_{ij}$ from $\Qmat^*_{ij}$?
 
 > **Lemma 1**: (Erisman and Tinney, 1975)
 Let $\Lmat = chol(\Qmat)$. If $L_{ij} \ne 0$, then $\Sigma_{ij}$ can be computed using elements in
@@ -439,24 +458,18 @@ Let $\Lmat = chol(\Qmat)$. If $L_{ij} \ne 0$, then $\Sigma_{ij}$ can be computed
   - $\Sigma^*_{IJ}, (I,J) = \{ i', j'; i' > i, j' > j, \Lmat_{i'j'}, \ne 0 \}$
 
 - Knowledge of $chol(\Qmat^*)$ implies knowledge of a sparse subset of $\Sigma^*$, $\Sigma_{00}^*$.
-</small>
+- $\Sigma_{00}^*$ contains the required elements.
 
 Sparse subsets
 =============
 type: exclaim
 
-<small>
-- A full backsolve for $\Amat \Sigma^* \Amat^T$ is wasteful since $\Amat$ is very sparse.
-- We only need a few elements of $\Sigma^*$. Which elements are these?
-
-> **Theorem 1**: Let $\yvec = \Cmat\xvec + \vvec$ and $\vvec \sim \mathcal{N}(0,\Tmat^{-1})$. Then if
+> **Theorem 1**: Let $\yvec = \Cmat\xvec + \vvec$, $\vvec \sim \mathcal{N}(0,\Tmat^{-1})$ and $\xvec \sim \mathcal{N}(0,\Qmat^{-1})$. Then if
 - $\textrm{zeros}(\Amat) \subseteq \textrm{zeros}(\Cmat)$
 - $\Amat$ is non-negative
 - $\Tmat$ is diagonal, then $diag(\Amat \Sigma^* \Amat^T)  \equiv diag(\Amat \Sigma^*_{00} \Amat^T)$
 
 - We can replace a very expensive backsolve by a very easy matrix multiplication.
-</small>
-
  
 
 Implications
